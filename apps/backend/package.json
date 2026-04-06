@@ -1,0 +1,12 @@
+{
+  "name": "@repo/backend",
+  "version": "0.0.1",
+  "description": "NestJS backend application",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Backend dev server — scaffold pending'",
+    "build": "echo 'Backend build — scaffold pending'",
+    "test": "echo 'Backend tests — scaffold pending'",
+    "lint": "echo 'Backend lint — scaffold pending'"
+  }
+}
