@@ -1,0 +1,12 @@
+{
+  "name": "@repo/frontend",
+  "version": "0.0.1",
+  "description": "React + Vite frontend application",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Frontend dev server — scaffold pending'",
+    "build": "echo 'Frontend build — scaffold pending'",
+    "test": "echo 'Frontend tests — scaffold pending'",
+    "lint": "echo 'Frontend lint — scaffold pending'"
+  }
+}
