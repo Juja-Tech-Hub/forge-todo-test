@@ -1,0 +1,26 @@
+{
+  "name": "forge-todo-test",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo for Forge Todo Test application",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test:backend": "npm --workspace=apps/backend test",
+    "test:frontend": "npm --workspace=apps/frontend test",
+    "dev:backend": "npm --workspace=apps/backend run dev",
+    "dev:frontend": "npm --workspace=apps/frontend run dev",
+    "build:backend": "npm --workspace=apps/backend run build",
+    "build:frontend": "npm --workspace=apps/frontend run build",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
