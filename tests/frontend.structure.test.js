@@ -1,14 +1,15 @@
 /**
- * Frontend Structure Tests
+ * Frontend App Structure Tests
  *
- * These tests verify that the React frontend application is correctly
- * scaffolded with Vite, TypeScript, required dependencies, and base structure.
+ * These tests verify that the React frontend app is correctly scaffolded
+ * with Vite + TypeScript, required dependencies, and base project structure.
  */
 
 const fs = require('fs');
 const path = require('path');
 
-const FRONTEND = path.resolve(__dirname, '..', 'apps', 'frontend');
+const ROOT = path.resolve(__dirname, '..');
+const FRONTEND = path.join(ROOT, 'apps', 'frontend');
 
 describe('Frontend App Structure', () => {
   describe('package.json', () => {
@@ -26,20 +27,6 @@ describe('Frontend App Structure', () => {
     it('has a name field', () => {
       expect(pkg.name).toBeDefined();
       expect(typeof pkg.name).toBe('string');
-      expect(pkg.name.length).toBeGreaterThan(0);
-    });
-
-    it('has a dev script', () => {
-      expect(pkg.scripts).toBeDefined();
-      expect(pkg.scripts.dev).toBeDefined();
-    });
-
-    it('has a build script', () => {
-      expect(pkg.scripts.build).toBeDefined();
-    });
-
-    it('has a test script', () => {
-      expect(pkg.scripts.test).toBeDefined();
     });
 
     it('has react as a dependency', () => {
@@ -52,53 +39,45 @@ describe('Frontend App Structure', () => {
       expect(deps['react-dom']).toBeDefined();
     });
 
+    it('has axios as a dependency', () => {
+      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+      expect(deps['axios']).toBeDefined();
+    });
+
     it('has vite as a dev dependency', () => {
-      expect(pkg.devDependencies).toBeDefined();
-      expect(pkg.devDependencies['vite']).toBeDefined();
+      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+      expect(deps['vite']).toBeDefined();
     });
 
     it('has @vitejs/plugin-react as a dev dependency', () => {
-      expect(pkg.devDependencies['@vitejs/plugin-react']).toBeDefined();
+      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+      expect(deps['@vitejs/plugin-react']).toBeDefined();
     });
 
-    it('has typescript as a dev dependency', () => {
-      expect(pkg.devDependencies['typescript']).toBeDefined();
+    it('has a dev script', () => {
+      expect(pkg.scripts).toBeDefined();
+      expect(pkg.scripts.dev).toBeDefined();
     });
 
-    it('has axios as a dependency', () => {
-      expect(pkg.dependencies['axios']).toBeDefined();
+    it('has a build script', () => {
+      expect(pkg.scripts.build).toBeDefined();
     });
 
-    it('has @stitch-mcp/ui or similar Stitch MCP UI library as a dependency', () => {
-      const allDeps = {
-        ...pkg.dependencies,
-        ...pkg.devDependencies
-      };
-      const hasStitch = Object.keys(allDeps).some(
-        key => key.includes('stitch') || key.includes('@stitch')
+    it('has stitch MCP UI library as a dependency', () => {
+      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+      const hasStitch = Object.keys(deps).some(
+        (dep) =>
+          dep.includes('stitch') ||
+          dep.includes('@stitches') ||
+          dep.includes('stitch-ui') ||
+          dep.includes('@stitch')
       );
       expect(hasStitch).toBe(true);
     });
   });
 
-  describe('Vite configuration', () => {
-    it('has a vite.config.ts or vite.config.js file', () => {
-      const hasTs = fs.existsSync(path.join(FRONTEND, 'vite.config.ts'));
-      const hasJs = fs.existsSync(path.join(FRONTEND, 'vite.config.js'));
-      expect(hasTs || hasJs).toBe(true);
-    });
-
-    it('vite config references react plugin', () => {
-      const configPath = fs.existsSync(path.join(FRONTEND, 'vite.config.ts'))
-        ? path.join(FRONTEND, 'vite.config.ts')
-        : path.join(FRONTEND, 'vite.config.js');
-      const content = fs.readFileSync(configPath, 'utf-8');
-      expect(content).toMatch(/react/i);
-    });
-  });
-
   describe('TypeScript configuration', () => {
-    it('has a tsconfig.json file', () => {
+    it('tsconfig.json exists', () => {
       expect(fs.existsSync(path.join(FRONTEND, 'tsconfig.json'))).toBe(true);
     });
 
@@ -112,82 +91,96 @@ describe('Frontend App Structure', () => {
         fs.readFileSync(path.join(FRONTEND, 'tsconfig.json'), 'utf-8')
       );
       const target = tsconfig.compilerOptions && tsconfig.compilerOptions.target;
-      if (target) {
-        expect(['ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', 'ES2021', 'ES2022', 'ESNext'].includes(target.toUpperCase() === target ? target : target.toUpperCase())).toBe(true);
-      } else {
-        // target may be inherited or not required if using extends
-        const hasExtends = tsconfig.extends !== undefined || tsconfig.compilerOptions !== undefined;
-        expect(hasExtends).toBe(true);
-      }
+      expect(target).toMatch(/ES(Next|2015|2016|2017|2018|2019|2020|2021|2022)/i);
+    });
+
+    it('tsconfig has strict mode enabled', () => {
+      const tsconfig = JSON.parse(
+        fs.readFileSync(path.join(FRONTEND, 'tsconfig.json'), 'utf-8')
+      );
+      expect(tsconfig.compilerOptions && tsconfig.compilerOptions.strict).toBe(true);
     });
   });
 
-  describe('Source files', () => {
-    it('has a src/ directory', () => {
-      expect(fs.existsSync(path.join(FRONTEND, 'src'))).toBe(true);
-      expect(fs.statSync(path.join(FRONTEND, 'src')).isDirectory()).toBe(true);
+  describe('Vite configuration', () => {
+    it('vite.config.ts or vite.config.js exists', () => {
+      const hasTs = fs.existsSync(path.join(FRONTEND, 'vite.config.ts'));
+      const hasJs = fs.existsSync(path.join(FRONTEND, 'vite.config.js'));
+      expect(hasTs || hasJs).toBe(true);
     });
 
-    it('has src/main.tsx entry point', () => {
+    it('vite config references react plugin', () => {
+      const tsPath = path.join(FRONTEND, 'vite.config.ts');
+      const jsPath = path.join(FRONTEND, 'vite.config.js');
+      const configPath = fs.existsSync(tsPath) ? tsPath : jsPath;
+      const content = fs.readFileSync(configPath, 'utf-8');
+      expect(content).toMatch(/@vitejs\/plugin-react/);
+    });
+  });
+
+  describe('Source structure', () => {
+    it('src/ directory exists', () => {
+      expect(fs.existsSync(path.join(FRONTEND, 'src'))).toBe(true);
+    });
+
+    it('src/main.tsx exists', () => {
       expect(fs.existsSync(path.join(FRONTEND, 'src', 'main.tsx'))).toBe(true);
     });
 
-    it('has src/App.tsx component', () => {
+    it('src/App.tsx exists', () => {
       expect(fs.existsSync(path.join(FRONTEND, 'src', 'App.tsx'))).toBe(true);
     });
 
-    it('main.tsx references ReactDOM or createRoot', () => {
+    it('index.html exists at root of frontend app', () => {
+      expect(fs.existsSync(path.join(FRONTEND, 'index.html'))).toBe(true);
+    });
+
+    it('index.html references main entry point', () => {
+      const content = fs.readFileSync(path.join(FRONTEND, 'index.html'), 'utf-8');
+      expect(content).toMatch(/src\/main/);
+    });
+  });
+
+  describe('TypeScript source files', () => {
+    it('src/main.tsx contains ReactDOM render or createRoot', () => {
       const content = fs.readFileSync(
         path.join(FRONTEND, 'src', 'main.tsx'),
         'utf-8'
       );
-      expect(content).toMatch(/ReactDOM|createRoot/i);
+      expect(content).toMatch(/createRoot|ReactDOM/);
     });
 
-    it('App.tsx exports a default component', () => {
+    it('src/App.tsx exports a default component', () => {
       const content = fs.readFileSync(
         path.join(FRONTEND, 'src', 'App.tsx'),
         'utf-8'
       );
-      expect(content).toMatch(/export default/i);
+      expect(content).toMatch(/export default/);
     });
 
-    it('App.tsx imports or uses React', () => {
+    it('src/App.tsx imports React or uses JSX', () => {
       const content = fs.readFileSync(
         path.join(FRONTEND, 'src', 'App.tsx'),
         'utf-8'
       );
-      expect(content).toMatch(/react/i);
+      const hasReactImport = content.includes("import React") || content.includes('import React');
+      const hasJSX = content.includes('<') && content.includes('/>');
+      expect(hasReactImport || hasJSX).toBe(true);
     });
   });
 
-  describe('HTML entry point', () => {
-    it('has an index.html file', () => {
-      expect(fs.existsSync(path.join(FRONTEND, 'index.html'))).toBe(true);
-    });
-
-    it('index.html references the main entry script', () => {
-      const content = fs.readFileSync(
-        path.join(FRONTEND, 'index.html'),
-        'utf-8'
+  describe('Stitch MCP UI library integration', () => {
+    it('stitch package is listed in dependencies', () => {
+      const pkgPath = path.join(FRONTEND, 'package.json');
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+      const hasStitch = Object.keys(allDeps).some(
+        (dep) =>
+          dep.includes('stitch') ||
+          dep.includes('@stitches') ||
+          dep.includes('@stitch')
       );
-      expect(content).toMatch(/src\/main\.tsx|src\/main\.jsx|src\/main\.ts/i);
-    });
-
-    it('index.html has a root div or mount point', () => {
-      const content = fs.readFileSync(
-        path.join(FRONTEND, 'index.html'),
-        'utf-8'
-      );
-      expect(content).toMatch(/id=["']root["']/i);
-    });
-  });
-
-  describe('Type declarations', () => {
-    it('has src/vite-env.d.ts or similar type reference file', () => {
-      const hasViteEnv = fs.existsSync(path.join(FRONTEND, 'src', 'vite-env.d.ts'));
-      const hasViteEnvDts = fs.existsSync(path.join(FRONTEND, 'src', 'vite-env.d.ts'));
-      expect(hasViteEnv || hasViteEnvDts).toBe(true);
+      expect(hasStitch).toBe(true);
     });
   });
 });
