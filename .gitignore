@@ -6,28 +6,29 @@ node_modules/
 # Build outputs
 dist/
 build/
-out/
 .next/
+out/
 
-# Environment files
+# Environment variables
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-.env.*.local
 
 # Logs
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-logs/
-*.log
+lerna-debug.log*
 
-# OS files
-.DS_Store
-Thumbs.db
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
 
 # IDE / Editor
 .vscode/
@@ -37,13 +38,15 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
-# Testing
-coverage/
-.nyc_output/
+# OS
+.DS_Store
+Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
 
-# Misc
-.cache/
-.turbo/
+# Vite
+*.local
+
+# Testing
+jest_*
