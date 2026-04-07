@@ -1,8 +1,8 @@
 import React from 'react';
 
-function App(): JSX.Element {
+function App() {
   return (
-    <div>
+    <div className="app">
       <h1>Forge Todo</h1>
     </div>
   );
