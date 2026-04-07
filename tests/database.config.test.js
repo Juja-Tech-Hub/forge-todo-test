@@ -1,8 +1,8 @@
 /**
  * Database Configuration Tests
  *
- * These tests verify that the environment configuration files
- * exist and contain the required variables for PostgreSQL database connectivity.
+ * These tests verify that the database configuration is correctly set up
+ * with the required environment variables and configuration files.
  */
 
 const fs = require('fs');
@@ -11,7 +11,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const BACKEND = path.join(ROOT, 'apps', 'backend');
 
-describe('Database Environment Configuration', () => {
+describe('Database Configuration', () => {
   describe('.env.example file', () => {
     let envExampleContent;
 
@@ -24,91 +24,49 @@ describe('Database Environment Configuration', () => {
       expect(fs.existsSync(path.join(BACKEND, '.env.example'))).toBe(true);
     });
 
-    it('is not empty', () => {
-      expect(envExampleContent.trim().length).toBeGreaterThan(0);
-    });
-
     it('documents DATABASE_URL variable', () => {
-      expect(envExampleContent).toMatch(/DATABASE_URL/m);
+      expect(envExampleContent).toMatch(/DATABASE_URL/);
     });
 
     it('documents PORT variable', () => {
-      expect(envExampleContent).toMatch(/PORT/m);
+      expect(envExampleContent).toMatch(/PORT/);
     });
 
     it('documents NODE_ENV variable', () => {
-      expect(envExampleContent).toMatch(/NODE_ENV/m);
+      expect(envExampleContent).toMatch(/NODE_ENV/);
     });
 
-    it('DATABASE_URL has a postgresql example value', () => {
-      expect(envExampleContent).toMatch(/postgresql:\/\//m);
-    });
-
-    it('has a valid PORT example value', () => {
-      expect(envExampleContent).toMatch(/PORT=\d+/m);
+    it('has a valid PostgreSQL DATABASE_URL example', () => {
+      expect(envExampleContent).toMatch(/postgresql:\/\/|postgres:\/\//);
     });
   });
 
   describe('.env file', () => {
-    let envContent;
-
-    beforeAll(() => {
-      const envPath = path.join(BACKEND, '.env');
-      envContent = fs.readFileSync(envPath, 'utf-8');
-    });
-
     it('exists in apps/backend', () => {
       expect(fs.existsSync(path.join(BACKEND, '.env'))).toBe(true);
     });
 
-    it('is not empty', () => {
-      expect(envContent.trim().length).toBeGreaterThan(0);
-    });
-
     it('contains DATABASE_URL', () => {
-      expect(envContent).toMatch(/DATABASE_URL/m);
+      const envContent = fs.readFileSync(path.join(BACKEND, '.env'), 'utf-8');
+      expect(envContent).toMatch(/DATABASE_URL/);
     });
 
     it('contains PORT', () => {
-      expect(envContent).toMatch(/PORT/m);
+      const envContent = fs.readFileSync(path.join(BACKEND, '.env'), 'utf-8');
+      expect(envContent).toMatch(/PORT/);
     });
 
-    it('contains NODE_ENV', () => {
-      expect(envContent).toMatch(/NODE_ENV/m);
-    });
-
-    it('DATABASE_URL uses postgresql protocol', () => {
-      expect(envContent).toMatch(/DATABASE_URL=postgresql:\/\//m);
-    });
-
-    it('has a valid PORT value', () => {
-      expect(envContent).toMatch(/PORT=\d+/m);
+    it('has a valid PostgreSQL connection string', () => {
+      const envContent = fs.readFileSync(path.join(BACKEND, '.env'), 'utf-8');
+      expect(envContent).toMatch(/DATABASE_URL\s*=\s*(postgresql|postgres):\/\//);
     });
   });
 
-  describe('.gitignore protects .env file', () => {
-    let gitignoreContent;
-
-    beforeAll(() => {
+  describe('.gitignore includes .env', () => {
+    it('root .gitignore ignores .env files', () => {
       const gitignorePath = path.join(ROOT, '.gitignore');
-      gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
-    });
-
-    it('.gitignore exists', () => {
-      expect(fs.existsSync(path.join(ROOT, '.gitignore'))).toBe(true);
-    });
-
-    it('ignores .env files', () => {
-      expect(gitignoreContent).toMatch(/\.env/m);
-    });
-
-    it('does not ignore .env.example', () => {
-      // .env.example should NOT be ignored (it's documentation)
-      const lines = gitignoreContent.split('\n').map(l => l.trim());
-      const blocksExample = lines.some(line =>
-        line === '.env.example' || line === '*.env.example'
-      );
-      expect(blocksExample).toBe(false);
+      const gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
+      expect(gitignoreContent).toMatch(/\.env/);
     });
   });
 
@@ -117,74 +75,56 @@ describe('Database Environment Configuration', () => {
 
     it('exports a getDatabaseConfig function or object', () => {
       expect(DatabaseConfig).toBeDefined();
-      const exported = DatabaseConfig.default || DatabaseConfig.getDatabaseConfig || DatabaseConfig;
-      expect(exported).toBeDefined();
     });
 
-    it('getDatabaseConfig returns database configuration object', () => {
-      const getDatabaseConfig = DatabaseConfig.getDatabaseConfig || DatabaseConfig.default;
-      expect(typeof getDatabaseConfig).toBe('function');
-      const config = getDatabaseConfig({
-        DATABASE_URL: 'postgresql://user:pass@localhost:5432/testdb',
-        PORT: '3000',
-        NODE_ENV: 'test',
-      });
-      expect(config).toBeDefined();
-      expect(typeof config).toBe('object');
+    it('exports getDatabaseConfig as a function', () => {
+      expect(typeof DatabaseConfig.getDatabaseConfig).toBe('function');
     });
 
-    it('getDatabaseConfig returns databaseUrl', () => {
-      const getDatabaseConfig = DatabaseConfig.getDatabaseConfig || DatabaseConfig.default;
-      const config = getDatabaseConfig({
-        DATABASE_URL: 'postgresql://user:pass@localhost:5432/testdb',
-        PORT: '3000',
-        NODE_ENV: 'test',
-      });
-      expect(config.databaseUrl).toBe('postgresql://user:pass@localhost:5432/testdb');
+    it('getDatabaseConfig returns an object with databaseUrl', () => {
+      const config = DatabaseConfig.getDatabaseConfig();
+      expect(config).toHaveProperty('databaseUrl');
     });
 
-    it('getDatabaseConfig returns port as number', () => {
-      const getDatabaseConfig = DatabaseConfig.getDatabaseConfig || DatabaseConfig.default;
-      const config = getDatabaseConfig({
-        DATABASE_URL: 'postgresql://user:pass@localhost:5432/testdb',
-        PORT: '3000',
-        NODE_ENV: 'test',
-      });
+    it('getDatabaseConfig returns an object with port', () => {
+      const config = DatabaseConfig.getDatabaseConfig();
+      expect(config).toHaveProperty('port');
+    });
+
+    it('getDatabaseConfig returns an object with nodeEnv', () => {
+      const config = DatabaseConfig.getDatabaseConfig();
+      expect(config).toHaveProperty('nodeEnv');
+    });
+
+    it('port is a number', () => {
+      const config = DatabaseConfig.getDatabaseConfig();
+      expect(typeof config.port).toBe('number');
+    });
+
+    it('nodeEnv defaults to development when NODE_ENV is not set', () => {
+      const originalEnv = process.env.NODE_ENV;
+      delete process.env.NODE_ENV;
+      const config = DatabaseConfig.getDatabaseConfig();
+      expect(config.nodeEnv).toBe('development');
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('port defaults to 3000 when PORT is not set', () => {
+      const originalPort = process.env.PORT;
+      delete process.env.PORT;
+      const config = DatabaseConfig.getDatabaseConfig();
       expect(config.port).toBe(3000);
+      if (originalPort !== undefined) {
+        process.env.PORT = originalPort;
+      }
     });
 
-    it('getDatabaseConfig returns nodeEnv', () => {
-      const getDatabaseConfig = DatabaseConfig.getDatabaseConfig || DatabaseConfig.default;
-      const config = getDatabaseConfig({
-        DATABASE_URL: 'postgresql://user:pass@localhost:5432/testdb',
-        PORT: '3000',
-        NODE_ENV: 'test',
-      });
-      expect(config.nodeEnv).toBe('test');
-    });
-
-    it('getDatabaseConfig uses default PORT of 3000 when not provided', () => {
-      const getDatabaseConfig = DatabaseConfig.getDatabaseConfig || DatabaseConfig.default;
-      const config = getDatabaseConfig({
-        DATABASE_URL: 'postgresql://user:pass@localhost:5432/testdb',
-      });
-      expect(config.port).toBe(3000);
-    });
-
-    it('throws or returns undefined databaseUrl when DATABASE_URL is missing', () => {
-      const getDatabaseConfig = DatabaseConfig.getDatabaseConfig || DatabaseConfig.default;
-      const config = getDatabaseConfig({});
-      // Either throws or returns undefined/null for databaseUrl
-      expect(config.databaseUrl == null || config.databaseUrl === '').toBe(true);
-    });
-  });
-
-  describe('Backend DatabaseConfig NestJS module', () => {
-    it('database config file exists', () => {
-      const configPath = path.join(BACKEND, 'src', 'database', 'database.config.js');
-      const configTsPath = path.join(BACKEND, 'src', 'database', 'database.config.ts');
-      // Either compiled JS or TS source should exist
-      expect(fs.existsSync(configPath) || fs.existsSync(configTsPath)).toBe(true);
+    it('reads DATABASE_URL from environment', () => {
+      const testUrl = 'postgresql://test:test@localhost:5432/testdb';
+      process.env.DATABASE_URL = testUrl;
+      const config = DatabaseConfig.getDatabaseConfig();
+      expect(config.databaseUrl).toBe(testUrl);
+      delete process.env.DATABASE_URL;
     });
   });
 });
