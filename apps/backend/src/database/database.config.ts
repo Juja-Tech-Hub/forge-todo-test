@@ -9,11 +9,15 @@ export interface DatabaseConfigOptions {
   nodeEnv: string;
 }
 
-export function getDatabaseConfig(): DatabaseConfigOptions {
+export type EnvRecord = Record<string, string | undefined>;
+
+export function getDatabaseConfig(
+  env: EnvRecord = process.env as EnvRecord,
+): DatabaseConfigOptions {
   return {
-    databaseUrl: process.env.DATABASE_URL,
-    port: parseInt(process.env.PORT ?? '3000', 10),
-    nodeEnv: process.env.NODE_ENV ?? 'development',
+    databaseUrl: env['DATABASE_URL'],
+    port: parseInt(env['PORT'] ?? '3000', 10),
+    nodeEnv: env['NODE_ENV'] ?? 'development',
   };
 }
 
