@@ -4,6 +4,8 @@ node_modules/
 # Build outputs
 dist/
 build/
+.next/
+out/
 
 # Environment files
 .env
@@ -15,6 +17,9 @@ build/
 
 # Coverage
 coverage/
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 logs/
@@ -35,9 +40,28 @@ pids/
 *.swp
 *.swo
 .DS_Store
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Editor directories
+.vscode/
+.idea/
+*.sw?
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
 
 # NestJS
 .nest/
+# Vite
+.vite/
